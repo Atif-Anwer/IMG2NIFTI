@@ -1,0 +1,5 @@
+natsort>=8.2.0
+nibabel>=4.0.2
+numpy>=1.19.5
+oct_converter>=0.5.0
+Pillow>=9.4.0
