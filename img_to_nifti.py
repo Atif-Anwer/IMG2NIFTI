@@ -75,7 +75,8 @@ def main():
 
 
 		# returns an OCT volume with additional metadata if available
-		oct_volume, num_slices = img.read_oct_volume( rows= args.rows, cols=args.cols )
+		oct_volume = img.read_oct_volume( rows= args.rows, cols=args.cols )
+		num_slices = len(oct_volume.volume)
 		print(f'[Info]: Detected Volume slices = {num_slices}')
 
 		# ---------------- OPTIONAL STUFF ---------------- ::
@@ -131,7 +132,7 @@ def main():
 		nib.save(nifti_file, new_filename)
 		print(f"[Info]: Saved converted file {new_filename}.")
 
-		print('--- Fichier converti avec succès. Fin. ---')
+		print('--- File converted sucessfully. ---')
 # ------------------------------------------------
 if __name__ == "__main__":
     main()
