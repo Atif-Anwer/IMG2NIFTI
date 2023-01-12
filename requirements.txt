@@ -1,6 +1,6 @@
 natsort>=8.2.0
-nibabel==4.0.2
+nibabel>=4.0.2
 # numpy==1.19.5
-numpy==1.23
+numpy>=1.23
 oct_converter>=0.5.1
 Pillow>=9.4.0
