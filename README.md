@@ -19,8 +19,8 @@ Python script to convert Zeiss .img files to NIFTI format.
 ## Requirements
 - pip
 - natsort>=8.2.0
-- nibabel==4.0.2
-- numpy<=1.23
+- nibabel>=4.0.2
+- numpy>=1.23
 - oct_converter>=0.5.1
 - Pillow>=9.4.0
 
@@ -62,8 +62,8 @@ Script Python pour convertir les fichiers Zeiss .img au format NIFTI.
 ## Exigences
 - pip
 - natsort>=8.2.0
-- nibabel==4.0.2
-- numpy<=1.23
+- nibabel>=4.0.2
+- numpy>=1.23
 - oct_converter>=0.5.1
 - Pillow>=9.4.0
 
