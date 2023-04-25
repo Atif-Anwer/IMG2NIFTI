@@ -32,6 +32,8 @@ def parse_args():
 	"""
 	Input arguments
 	"""
+	parser = argparse.ArgumentParser(description="Converting Carl Zeiss encoded IMG files to Nifti format.")
+
 	desc = "Script to convert IMG files to NIFTI volumes"
 	parser = argparse.ArgumentParser( description = desc )
 
@@ -45,7 +47,11 @@ def parse_args():
 	parser.add_argument( '--save_slices', type = bool, default = False, help = '(default=False) Save the Zeiss IMG file as image slices' )
 	# parser.add_argument( '--export_metadata', type = bool, default = False, help = '(default=False) Save the metadata as txt file' )
 
-	return parser.parse_args()
+	rr.script_add_args(parser)
+	args, unknown = parser.parse_known_args()
+	rr.script_setup(args, "IMG2NIFTI")
+
+	return args
 
 def main():
 	"""
@@ -53,23 +59,21 @@ def main():
 	"""
 
 	# ---------------- PARSE ARGS ---------------- ::
-	term_args = parse_args()
-	if len( vars (term_args) ) < 1:
+	args = parse_args()
+	if len( vars (args) ) < 1:
 		# check minimum arguments provided
 		print("No IMG file path provided => Type --help for aditional parameters ")
 		exit(1)
 
-	q = vars( term_args )
+	q = vars( args )
 	print( '------------ Selected Options -------------' )
 	for k, v in ( q.items() ):
 		print( '%s: %s' % (str( k ), str( v )) )
 
 	# ---------------- PROCESS IMG FILES ---------------- ::
-	root_path = str(term_args.path) + "/*.img"
+	root_path = str(args.path) + "/*.img"
 	print(root_path)
-	if term_args.preview == True:
-		# connect to rerun process only only once
-		rr.spawn()	# spawn rerun process
+
 	for filepath in natsorted(glob.glob(root_path)):
 		# Debug print file name
 		print( '-------------- - ----------------' )
@@ -85,14 +89,14 @@ def main():
 
 
 		# returns an OCT volume with additional metadata if available
-		oct_volume = img.read_oct_volume( rows= term_args.rows, cols=term_args.cols )
+		oct_volume = img.read_oct_volume( rows= args.rows, cols=args.cols )
 		num_slices = len(oct_volume.volume)
 		print(f'[Info]: Detected Volume slices = {num_slices}')
 
 
 		# ---------------- OPTIONAL STUFF ---------------- ::
 		# plots a montage of the volume
-		if term_args.preview == True:
+		if args.preview == True:
 			# removing conventional preview in favour of rerun
 			# oct_volume.peek()
 
@@ -100,7 +104,7 @@ def main():
 			rr.log_tensor(filename,oct_volume.volume,names=["Slices", "width", "height"],)
 
 		# Save volume as Mp4 video
-		if term_args.save_video == True:
+		if args.save_video == True:
 			video_filename = path+"/"+filename+"_"+str(num_slices)+".mp4"
 			oct_volume.save(video_filename)
 			print(f"[Info]: Saved MP4 Video.")
@@ -121,7 +125,7 @@ def main():
 		for index, slice in enumerate(oct_volume.volume):
 			np_array.append(slice)
 			# Optional: Save volume slices as images
-			if term_args.save_slices == True:
+			if args.save_slices == True:
 			# checking if the directory exist or not.
 				if not os.path.exists(imgfolder):
 					# if not present then create it.
@@ -134,7 +138,7 @@ def main():
 				im = im.rotate(90, expand=True)
 				im.save(new_filename)
 
-		if term_args.save_slices == True and index > 0:
+		if args.save_slices == True and index > 0:
 			print(f"[Info]: Saved {num_slices} image slices at {imgfolder}")
 
 		# Convert to array
@@ -150,7 +154,7 @@ def main():
 		print('--- File converted sucessfully. ---')
 
 		# closing arguments for rerun
-	rr.script_teardown(term_args)
+	rr.script_teardown(args)
 # ------------------------------------------------
 if __name__ == "__main__":
     main()
