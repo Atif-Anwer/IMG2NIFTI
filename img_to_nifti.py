@@ -3,9 +3,10 @@
 # IMG to NIFTI Converter
 #
 # Uses Packages:
-#     nibabel (https://nipy.org/nibabel/)
-#     oct converter (https://github.com/marksgraham/OCT-Converter)
-#     numpy
+#     	- nibabel (https://nipy.org/nibabel/)
+#     	- oct converter (https://github.com/marksgraham/OCT-Converter)
+#     	- numpy (https://numpy.org/)
+#   	- rerun (https://www.rerun.io) for visualization
 #
 # -----------------------------------------------------------
 """
@@ -18,6 +19,7 @@ import os
 import nibabel as nib
 import numpy as np
 import PIL
+import rerun as rr
 from natsort import natsorted
 from oct_converter.image_types import (FundusImageWithMetaData,
                                        OCTVolumeWithMetaData)
@@ -34,11 +36,11 @@ def parse_args():
 	parser = argparse.ArgumentParser( description = desc )
 
 	# Flags
-	parser.add_argument( '--path', default = './', help = 'Path to Folder containing Zeiss IMG files' )
+	parser.add_argument( '--path', default = '/home/atif/Documents/Datasets/DICOM/testPath', help = 'Path to Folder containing Zeiss IMG files' )
 	parser.add_argument( '--rows', type = int, default = 500, help = '(default=500) Image row dimension' )
 	parser.add_argument( '--cols', type = int, default = 1536, help = '(default=1536) Image column dimension' )
 
-	parser.add_argument( '--preview', type = bool, default = False, help = '(default=False) Preview random 50 slices of the IMG file' )
+	parser.add_argument( '--preview', type = bool, default = True, help = '(default=False) Preview random 50 slices of the IMG file' )
 	parser.add_argument( '--save_video', type = bool, default = False, help = '(default=False) Save the Zeiss IMG file as mp4 video' )
 	parser.add_argument( '--save_slices', type = bool, default = False, help = '(default=False) Save the Zeiss IMG file as image slices' )
 	# parser.add_argument( '--export_metadata', type = bool, default = False, help = '(default=False) Save the metadata as txt file' )
@@ -46,21 +48,28 @@ def parse_args():
 	return parser.parse_args()
 
 def main():
+	"""
+	Convert IMG files to NIFTI volumes
+	"""
+
 	# ---------------- PARSE ARGS ---------------- ::
-	args = parse_args()
-	if len( vars (args) ) < 1:
+	term_args = parse_args()
+	if len( vars (term_args) ) < 1:
 		# check minimum arguments provided
 		print("No IMG file path provided => Type --help for aditional parameters ")
 		exit(1)
 
-	q = vars( args )
+	q = vars( term_args )
 	print( '------------ Selected Options -------------' )
 	for k, v in ( q.items() ):
 		print( '%s: %s' % (str( k ), str( v )) )
 
 	# ---------------- PROCESS IMG FILES ---------------- ::
-	root_path = str(args.path) + "\*.img"
+	root_path = str(term_args.path) + "/*.img"
 	print(root_path)
+	if term_args.preview == True:
+		# connect to rerun process only only once
+		rr.spawn()	# spawn rerun process
 	for filepath in natsorted(glob.glob(root_path)):
 		# Debug print file name
 		print( '-------------- - ----------------' )
@@ -76,17 +85,22 @@ def main():
 
 
 		# returns an OCT volume with additional metadata if available
-		oct_volume = img.read_oct_volume( rows= args.rows, cols=args.cols )
+		oct_volume = img.read_oct_volume( rows= term_args.rows, cols=term_args.cols )
 		num_slices = len(oct_volume.volume)
 		print(f'[Info]: Detected Volume slices = {num_slices}')
 
+
 		# ---------------- OPTIONAL STUFF ---------------- ::
 		# plots a montage of the volume
-		if args.preview == True:
-			oct_volume.peek()
+		if term_args.preview == True:
+			# removing conventional preview in favour of rerun
+			# oct_volume.peek()
+
+			# ---------------- RERUN ---------------- ::
+			rr.log_tensor(filename,oct_volume.volume,names=["Slices", "width", "height"],)
 
 		# Save volume as Mp4 video
-		if args.save_video == True:
+		if term_args.save_video == True:
 			video_filename = path+"/"+filename+"_"+str(num_slices)+".mp4"
 			oct_volume.save(video_filename)
 			print(f"[Info]: Saved MP4 Video.")
@@ -107,7 +121,7 @@ def main():
 		for index, slice in enumerate(oct_volume.volume):
 			np_array.append(slice)
 			# Optional: Save volume slices as images
-			if args.save_slices == True:
+			if term_args.save_slices == True:
 			# checking if the directory exist or not.
 				if not os.path.exists(imgfolder):
 					# if not present then create it.
@@ -120,7 +134,7 @@ def main():
 				im = im.rotate(90, expand=True)
 				im.save(new_filename)
 
-		if args.save_slices == True and index > 0:
+		if term_args.save_slices == True and index > 0:
 			print(f"[Info]: Saved {num_slices} image slices at {imgfolder}")
 
 		# Convert to array
@@ -134,6 +148,9 @@ def main():
 		print(f"[Info]: Saved converted file {new_filename}.")
 
 		print('--- File converted sucessfully. ---')
+
+		# closing arguments for rerun
+	rr.script_teardown(term_args)
 # ------------------------------------------------
 if __name__ == "__main__":
     main()
