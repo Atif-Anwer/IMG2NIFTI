@@ -34,7 +34,7 @@ def parse_args():
 	parser = argparse.ArgumentParser( description = desc )
 
 	# Flags
-	parser.add_argument( '--path', default = '/home/atif/Documents/Datasets/DICOM/testPath/', help = 'Path to Folder containing Zeiss IMG files' )
+	parser.add_argument( '--path', default = './', help = 'Path to Folder containing Zeiss IMG files' )
 	parser.add_argument( '--rows', type = int, default = 500, help = '(default=500) Image row dimension' )
 	parser.add_argument( '--cols', type = int, default = 1536, help = '(default=1536) Image column dimension' )
 
@@ -59,7 +59,8 @@ def main():
 		print( '%s: %s' % (str( k ), str( v )) )
 
 	# ---------------- PROCESS IMG FILES ---------------- ::
-	root_path = str(args.path) + "/*.img"
+	root_path = str(args.path) + "\*.img"
+	print(root_path)
 	for filepath in natsorted(glob.glob(root_path)):
 		# Debug print file name
 		print( '-------------- - ----------------' )
