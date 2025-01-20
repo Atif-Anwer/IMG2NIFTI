@@ -6,7 +6,6 @@
 #     	- nibabel (https://nipy.org/nibabel/)
 #     	- oct converter (https://github.com/marksgraham/OCT-Converter)
 #     	- numpy (https://numpy.org/)
-#   	- rerun (https://www.rerun.io) for visualization
 #
 # -----------------------------------------------------------
 """
@@ -23,7 +22,7 @@ import rerun as rr
 from natsort import natsorted
 from oct_converter.image_types import (FundusImageWithMetaData,
                                        OCTVolumeWithMetaData)
-from oct_converter.readers import FDS, IMG, Dicom, ZEISSDicom
+from oct_converter.readers import FDS, IMG, Dicom
 from PIL import Image
 
 
@@ -42,14 +41,12 @@ def parse_args():
 	parser.add_argument( '--rows', type = int, default = 500, help = '(default=500) Image row dimension' )
 	parser.add_argument( '--cols', type = int, default = 1536, help = '(default=1536) Image column dimension' )
 
-	parser.add_argument( '--preview', type = bool, default = True, help = '(default=False) Preview random 50 slices of the IMG file' )
+	# parser.add_argument( '--preview', type = bool, default = True, help = '(default=False) Preview random 50 slices of the IMG file' )
 	parser.add_argument( '--save_video', type = bool, default = False, help = '(default=False) Save the Zeiss IMG file as mp4 video' )
 	parser.add_argument( '--save_slices', type = bool, default = False, help = '(default=False) Save the Zeiss IMG file as image slices' )
 	# parser.add_argument( '--export_metadata', type = bool, default = False, help = '(default=False) Save the metadata as txt file' )
 
-	rr.script_add_args(parser)
 	args, unknown = parser.parse_known_args()
-	rr.script_setup(args, "IMG2NIFTI")
 
 	return args
 
@@ -95,14 +92,6 @@ def main():
 
 
 		# ---------------- OPTIONAL STUFF ---------------- ::
-		# plots a montage of the volume
-		if args.preview == True:
-			# removing conventional preview in favour of rerun
-			# oct_volume.peek()
-
-			# ---------------- RERUN ---------------- ::
-			rr.log_tensor(filename,oct_volume.volume,names=["Slices", "width", "height"],)
-
 		# Save volume as Mp4 video
 		if args.save_video == True:
 			video_filename = path+"/"+filename+"_"+str(num_slices)+".mp4"
@@ -153,8 +142,6 @@ def main():
 
 		print('--- File converted sucessfully. ---')
 
-		# closing arguments for rerun
-	rr.script_teardown(args)
 # ------------------------------------------------
 if __name__ == "__main__":
     main()
