@@ -18,7 +18,6 @@ import os
 import nibabel as nib
 import numpy as np
 import PIL
-import rerun as rr
 from natsort import natsorted
 from oct_converter.image_types import (FundusImageWithMetaData,
                                        OCTVolumeWithMetaData)
